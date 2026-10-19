@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#176b68" />
+    <title>msalzer06 · 扫雷分析器06</title>
+    <link rel="stylesheet" href="styles.css?v=20261019-3" />
+  </head>
+  <body>
+    <div class="app-frame">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">✦</div>
+          <div>
+            <p class="eyebrow">MSALZER06</p>
+            <h1>扫雷分析器06</h1>
+          </div>
+        </div>
+        <div class="topbar-meta">
+          <span class="status-dot" id="topStatusDot"></span>
+          <span id="topStatusText">准备开始</span>
+        </div>
+      </header>
+
+      <main class="app-content">
+        <section class="main-column" aria-label="扫雷工作区">
+          <nav class="mode-tabs" aria-label="选择模式">
+            <button class="mode-tab is-active" id="playModeButton" type="button">
+              <span class="tab-icon" aria-hidden="true">▦</span>
+              普通对局
+            </button>
+            <button class="mode-tab" id="editorModeButton" type="button">
+              <span class="tab-icon" aria-hidden="true">✎</span>
+              残局编辑
+            </button>
+          </nav>
+
+          <section class="config-band" aria-label="棋盘设置">
+            <div class="config-heading">
+              <span class="section-kicker">BOARD SETUP</span>
+              <h2 id="setupTitle">配置一局新游戏</h2>
+            </div>
+            <div class="config-fields">
+              <label class="number-field">
+                <span>行</span>
+                <input id="rowsInput" type="number" inputmode="numeric" min="2" max="60" value="10" />
+              </label>
+              <span class="dimension-mark" aria-hidden="true">×</span>
+              <label class="number-field">
+                <span>列</span>
+                <input id="colsInput" type="number" inputmode="numeric" min="2" max="60" value="14" />
+              </label>
+              <label class="number-field mines-field">
+                <span>雷数</span>
+                <input id="minesInput" type="number" inputmode="numeric" min="1" value="26" />
+              </label>
+              <button class="primary-button" id="newGameButton" type="button">
+                <span aria-hidden="true">↻</span>
+                <span id="newGameLabel">开始新局</span>
+              </button>
+            </div>
+            <p class="config-hint" id="configHint">首次翻开会自动保护点击位置及周围一圈。</p>
+          </section>
+
+          <section class="board-section" aria-label="扫雷棋盘">
+            <div class="board-toolbar">
+              <div>
+                <span class="section-kicker">LIVE BOARD</span>
+                <h2 id="boardTitle">等待你的第一步</h2>
+              </div>
+              <div class="board-stats" aria-label="对局统计">
+                <div class="mini-stat">
+                  <span class="mini-stat-value" id="mineCount">0 / 26</span>
+                  <span class="mini-stat-label" id="mineCountLabel">已标记雷</span>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-stat-value" id="timerValue">00:00</span>
+                  <span class="mini-stat-label">用时</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="board-wrap">
+              <div id="board" class="board" role="grid" aria-label="扫雷棋盘"></div>
+            </div>
+
+            <div class="board-footer">
+              <span class="legend-item"><i class="legend-swatch covered-swatch"></i>未翻开</span>
+              <span class="legend-item"><i class="legend-swatch revealed-swatch"></i>已翻开</span>
+              <span class="legend-item"><i class="legend-swatch flagged-swatch">⚑</i>标记</span>
+              <span id="boardFooterHint">左键翻开 · 右键标记</span>
+            </div>
+          </section>
+
+          <section class="editor-band is-hidden" id="editorBand" aria-label="残局编辑工具">
+            <div class="editor-heading">
+              <span class="section-kicker">ENDGAME DESIGNER</span>
+              <h2>搭建一个残局</h2>
+              <p>设计已经翻开的格子和它们的数字。开始残局时，程序会根据这些数字随机生成相容的雷位。</p>
+            </div>
+            <div class="editor-tools" role="toolbar" aria-label="残局编辑工具">
+              <button class="tool-button is-active" data-editor-tool="number" type="button">
+                <span aria-hidden="true">#</span> 设置数字
+              </button>
+              <label class="editor-number-picker">
+                <span>数字</span>
+                <select id="editorNumberInput" aria-label="要设置的数字">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                </select>
+              </label>
+              <button class="tool-button" data-editor-tool="empty" type="button">
+                <span aria-hidden="true">○</span> 设置空白
+              </button>
+              <button class="tool-button" data-editor-tool="erase" type="button">
+                <span aria-hidden="true">⌫</span> 擦除
+              </button>
+              <span class="editor-count" id="editorCount">已设置 0 个翻开格子</span>
+              <button class="secondary-button" id="clearEditorButton" type="button">清空编辑</button>
+              <button class="primary-button" id="startCustomButton" type="button">
+                <span aria-hidden="true">▶</span> 开始残局
+              </button>
+            </div>
+            <p class="editor-hint" id="editorHint">选择数字后点击格子；“设置空白”代表数字 0。雷的位置会在开始时随机生成。</p>
+          </section>
+        </section>
+
+        <aside class="side-column" aria-label="概率与对局信息">
+          <section class="probability-panel">
+            <div class="panel-header">
+              <div>
+                <span class="section-kicker">PROBABILITY LENS</span>
+                <h2>雷概率透镜</h2>
+              </div>
+              <label class="toggle-control">
+                <input id="probabilityToggle" type="checkbox" checked />
+                <span class="toggle-track" aria-hidden="true"><span></span></span>
+                <span class="sr-only">显示未翻开格子的雷概率</span>
+              </label>
+            </div>
+            <p class="panel-copy" id="probabilityCopy">在未翻开的格子上显示当前推断的雷概率。</p>
+            <div class="probability-summary">
+              <div class="summary-cell">
+                <strong id="unknownValue">0</strong>
+                <span>待翻开</span>
+              </div>
+              <div class="summary-cell">
+                <strong id="remainingMinesValue">26</strong>
+                <span>剩余雷</span>
+              </div>
+              <div class="summary-cell">
+                <strong id="safeValue">—</strong>
+                <span>必安全</span>
+              </div>
+            </div>
+            <div class="probability-note" id="probabilityNote">
+              <span class="note-marker" aria-hidden="true">i</span>
+              <span>概率会在每次翻开或标记后实时更新。</span>
+            </div>
+          </section>
+
+          <section class="insight-panel">
+            <div class="panel-header compact">
+              <div>
+                <span class="section-kicker">FIELD NOTES</span>
+                <h2>对局提示</h2>
+              </div>
+            </div>
+            <div class="insight-list">
+              <div class="insight-row">
+                <span class="insight-icon teal" aria-hidden="true">1</span>
+                <p><b>翻开</b><span>左键点击未翻开的格子</span></p>
+              </div>
+              <div class="insight-row">
+                <span class="insight-icon amber" aria-hidden="true">⚑</span>
+                <p><b>标记</b><span>右键点击，或切换到标记模式</span></p>
+              </div>
+              <div class="insight-row">
+                <span class="insight-icon coral" aria-hidden="true">%</span>
+                <p><b>概率</b><span>0% 表示当前约束下必安全</span></p>
+              </div>
+            </div>
+          </section>
+
+          <section class="action-panel">
+            <div class="panel-header compact">
+              <div>
+                <span class="section-kicker">QUICK ACTIONS</span>
+                <h2>快捷操作</h2>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button class="outline-button" id="restartButton" type="button"><span aria-hidden="true">↺</span> 重置本局</button>
+              <button class="outline-button" id="flagModeButton" type="button"><span aria-hidden="true">⚑</span> 标记模式：关</button>
+            </div>
+          </section>
+
+          <footer class="side-footer">
+            <span>本地运行 · 无需联网</span>
+            <span class="footer-dot">·</span>
+            <span>约束推理已启用</span>
+          </footer>
+        </aside>
+      </main>
+    </div>
+    <script src="app.js?v=20261019-3"></script>
+  </body>
+</html>
